@@ -1,6 +1,8 @@
 var express = require('express');
 var mysqlConnection = require('../middlewares/mysqlConnection')
 var router = express.Router();
+var async = require('async')
+
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -8,31 +10,31 @@ router.get('/', function(req, res, next) {
 });
 
 /**
- * Create User Account
+ *  유저 계정 생성
  */
 router.post('/', (req,res)=>{
   var body = req.body
-  
-  mysqlConnection.query("INSERT INTO Users (name, account, password) VALUES ("+body.name + "," + body.account + ","+ body.password + ")" , (err, res, field)=>{
-    if(err){
-      console.log(err)
-    }else {
-      console.log(res)
-    }
-  })
-})
+  var params = [ body.account ,body.password, body.name]
 
-/**
- * Get User Account
- */
-router.get('/', (req,res)=>{
-  var body = req.body
+  var task = [(cb) =>{
+    mysqlConnection.query("SELECT * FROM Users WHERE account = ?", [body.account], (err, result, fields)=>{
+        if(result.length > 0){
+          return res.json({"status": "success", "message": "이미 등록된 계정입니다."})
+        }else {
+          cb(err)
+        }
+    })
+  }, (cb) =>{
+    mysqlConnection.query("CALL ddd.User_Add(?,?,?)", params, (err, result, field)=>{
+      cb(err, result[0][0].userId)
+    })
+  }]
 
-  mysqlConnection.query("SELECT FROM Users WHERE account = " + body.account + " AND password=" +body.password, (err, res, field)=>{
+  async.waterfall(task, (err, result)=>{
     if(err){
-      console.log(err)
-    }else {
-      console.log(res)
+      return res.json({"status": "fail", "error": err.code})
+    }else{
+      return res.json({"status": "success", "userId": result})
     }
   })
 })
