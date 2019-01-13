@@ -10,7 +10,36 @@ router.get('/', function(req, res, next) {
 });
 
 /**
- *  유저 계정 생성
+ * @swagger
+ *  /users:
+ *    post:
+ *      tags: [User]
+ *      summary: 유저 등록 
+ *      consumes:
+ *        - application/x-www-form-urlencoded
+ *      parameters:
+ *        - in: formData
+ *          required: true
+ *          type: string
+ *          name: account
+ *          description: 계정 ID 
+ *        - in: formData
+ *          required: true
+ *          type: string
+ *          name: password
+ *          description: 계정 비밀번호
+ *        - in: formData
+ *          required: true
+ *          type: string
+ *          name: name
+ *          description: 유저 이름
+ *      responses:
+ *        '200' :
+ *           description: success
+ *           example:
+ *              status: success
+ *              userId: 3
+ * 
  */
 router.post('/', (req,res)=>{
   var body = req.body

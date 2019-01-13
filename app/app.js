@@ -16,13 +16,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-var indexRouter = require('./routes/index')
 // ROUTER
-app.use('/', indexRouter);
+app.use('/', require('./routes/index'));
+app.use('/auth', require('./routes/auth'));
 app.use('/users', require('./routes/users'));
 app.use('/attends', require('./routes/attend'))
 
+// SWAGGER
+require('./middlewares/swaggerMiddleware').initSwagger(app)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
