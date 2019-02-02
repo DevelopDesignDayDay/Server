@@ -1,10 +1,20 @@
 const _swaggerDefinition = {
-    swagger: '2.0',
     info: {
         version: '1.0.0',
         title: 'ddd'
+    },
+    securityDefinitions: {
+        basicAuth: {
+            type : 'basic'
+        },
+        JWT: {
+            type: 'apiKey',
+            name: 'Authorization',
+            in: 'header'
+        }
     }
 };
+
 const _swaggerOptions = {
     swaggerDefinition: _swaggerDefinition,
     apis: [
