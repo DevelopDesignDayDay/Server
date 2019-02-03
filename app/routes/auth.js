@@ -23,7 +23,7 @@ const REFRESH_TOKEN_EXPIRES = 3600 * 5
  *          required: true
  *          type: string
  *          name: account
- *          description: 계정 ID (testing DDD1)
+ *          description: 계정 ID (testing ddd1)
  *        - in: formData
  *          required: true
  *          type: string
@@ -31,7 +31,7 @@ const REFRESH_TOKEN_EXPIRES = 3600 * 5
  *          description: 계정 비밀번호 (testing ddd1)
  *      responses:
  *        200 :
- *           description: 로그인 성공
+ *           description: success
  *           example:
  *              status: success
  *              user: {
@@ -40,7 +40,7 @@ const REFRESH_TOKEN_EXPIRES = 3600 * 5
  *                  account: 계정 ID
  *              }
  *        401:
- *          description: 인증 실패 
+ *          description: failed
  *          example:
  *            status: failed
  *            message: Authentication Error
@@ -48,7 +48,7 @@ const REFRESH_TOKEN_EXPIRES = 3600 * 5
  */
 router.post('/login', (req, res) => {
   const auth = { username: 'ddd', password: "dddAdmin123" }
-  const base64Credentials = req.headers.authorization.split(' ')[1]
+  const base64Credentials = (req.headers.authorization || '').split(' ')[1] || ''
   const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii')
   const [username, password] = credentials.split(':')
 
@@ -88,7 +88,8 @@ router.post('/login', (req, res) => {
 function getTokens(json, expiresIn) {
   const key = process.env.JWT_SECRET_KEY
   var token = jwt.sign(json, key, {
-    expiresIn: expiresIn
+    expiresIn: expiresIn,
+    algorithm: 'HS512'
   })
   return token
 }
