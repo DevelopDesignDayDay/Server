@@ -5,10 +5,10 @@ var jwtMiddleware = require('../middlewares/jwtMiddleware');
 var router = express.Router();
 require('date-utils')
 
-
-var INTERVAL = 10000 * 6
+const SECOND = 1000
+var INTERVAL = SECOND * 60
 var IS_CLOSED = -1
-var number = IS_CLOSED
+global.number = IS_CLOSED
 
 /**
  * @swagger
@@ -35,21 +35,21 @@ router.post("/start", jwtMiddleware(), (req, res) => {
     var date = current.toFormat('YYYY-MM-DD')
     var time = current.toFormat('HH24:MI:SS')
 
-    if (number == IS_CLOSED) {
+    if (global.number == IS_CLOSED) {
         mysqlConnection.query("CALL ddd.Date_Add(?, ?)", [date, time],
             (err, result, fields) => {
                 if (err) {
                     return res.json({ "status": "failed", "error": err.code })
                 } else {
-                    number = Math.floor(Math.random() * (99 - 10)) + 10
+                    global.number = Math.floor(Math.random() * (99 - 10)) + 10
                     setTimeout(() => { number = IS_CLOSED }, INTERVAL)
 
                     var expire = new Date(current.setMinutes(current.getMinutes() + (INTERVAL / 60000))).toFormat('YYYY-MM-DD HH24:MI:SS')
-                    return res.json({ "status": "success", "number": number, "expire": expire })
+                    return res.json({ "status": "success", "number": global.number, "expire": expire })
                 }
             })
     } else {
-        res.status(400).json({ "status": "failed", "number": number, "message": "이미 출석 체크가 시작되었습니다." })
+        res.status(400).json({ "status": "failed", "number": global.number, "message": "이미 출석 체크가 시작되었습니다." })
         return
     }
 })
@@ -77,8 +77,8 @@ router.post("/end", jwtMiddleware(), (req, res) => {
     var date = current.toFormat('YYYY-MM-DD')
     var time = current.toFormat('HH24:MI:SS')
 
-    if (number == IS_CLOSED) {
-        res.status(400).json({ "status": "failed", "number": number, "message": "이미 출석 체크가 종료되었습니다." })
+    if (global.number == IS_CLOSED) {
+        res.status(400).json({ "status": "failed", "number": global.number, "message": "이미 출석 체크가 종료되었습니다." })
         return
     } else {
         mysqlConnection.query('CALL ddd.Date_Update_ForEndTime(?,?)', [date, time],
@@ -87,7 +87,7 @@ router.post("/end", jwtMiddleware(), (req, res) => {
                     res.status(err.code).json({ "status": "failed", "message": err.message })
                     return
                 } else {
-                    number = IS_CLOSED
+                    global.number = IS_CLOSED
                     return res.json({ "status": "success" })
                 }
             })
@@ -131,10 +131,10 @@ router.post("/check", jwtMiddleware(), (req, res) => {
     var userId = body.userId
     var checkNum = body.number
 
-    if (number == IS_CLOSED) {
+    if (global.number == IS_CLOSED) {
         res.status(400).json({ "status": "failed", "message": "출석체크가 종료되었습니다." })
         return
-    } else if (number == checkNum) {
+    } else if (global.number == checkNum) {
         var date = new Date().toFormat('YYYY-MM-DD')
 
         var task = [(cb) => {
@@ -194,7 +194,7 @@ router.post("/check", jwtMiddleware(), (req, res) => {
 */
 router.put('/time', jwtMiddleware(), (req, res) => {
     var minutes = req.query.minutes
-    if (typeof minutes != number) {
+    if (typeof minutes != global.number) {
         minutes = parseInt(minutes)
     }
 

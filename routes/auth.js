@@ -6,6 +6,7 @@ var jwt = require('jsonwebtoken')
 
 const ACCESS_TOKEN_EXPIRES = 3600 * 3
 const REFRESH_TOKEN_EXPIRES = 3600 * 5
+const TYPE_ADMIN = 1
 
 /**
  * @swagger
@@ -37,8 +38,12 @@ const REFRESH_TOKEN_EXPIRES = 3600 * 5
  *              user: {
  *                  id: 5,
  *                  name: 유저 이름,
- *                  account: 계정 ID
+ *                  account: 계정 ID,
+ *                  type: 유저 타입
  *              }
+ *              isProgress: true 
+ *              accessToken: ..
+ *              refreshToken: ..
  *        401:
  *          description: failed
  *          example:
@@ -59,7 +64,7 @@ router.post('/login', (req, res) => {
     var body = req.body
     var params = [body.account, body.password]
 
-    mysqlConnection.query("SELECT id, name, account FROM Users WHERE account = ? AND password= ?", params,
+    mysqlConnection.query("SELECT id, name, account, type_id as type FROM Users WHERE account = ? AND password= ?", params,
       (err, result, field) => {
         if (err) {
           return res.json({ "status": "failed", "error": err.code })
@@ -73,10 +78,19 @@ router.post('/login', (req, res) => {
             var accessToken = getTokens(json, ACCESS_TOKEN_EXPIRES)
             var refreshToken = getTokens(json, REFRESH_TOKEN_EXPIRES)
 
-            return res.json({
-              "status": "success", "user": result[0],
-              "accessToken": accessToken, "refreshToken": refreshToken
-            })
+            if(result[0].type == TYPE_ADMIN){
+              return res.json({
+                "status": "success", "user": result[0],
+                "isProgress": global.number == -1 ? false : true,
+                "accessToken": accessToken, "refreshToken": refreshToken
+              })
+            }else {
+              return res.json({
+                "status": "success", "user": result[0],
+                "accessToken": accessToken, "refreshToken": refreshToken
+              })
+            }
+            
           } else {
             return res.json({ "status": "failed", "user": null, "message": "잘못된 계정 정보입니다" })
           }
