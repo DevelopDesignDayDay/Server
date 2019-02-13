@@ -12,7 +12,9 @@ const _swaggerDefinition = {
             name: 'Authorization',
             in: 'header'
         }
-    }
+    }, security: [{
+        JWT: []
+    }]
 };
 
 const _swaggerOptions = {
