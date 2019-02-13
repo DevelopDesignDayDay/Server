@@ -52,7 +52,7 @@ const TYPE_ADMIN = 1
  * 
  */
 router.post('/login', (req, res) => {
-  const auth = { username: 'ddd', password: "dddAdmin123" }
+  const auth = { username: process.env.AUTH_USERNAME, password: process.env.AUTH_PASSWORD }
   const base64Credentials = (req.headers.authorization || '').split(' ')[1] || ''
   const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii')
   const [username, password] = credentials.split(':')
