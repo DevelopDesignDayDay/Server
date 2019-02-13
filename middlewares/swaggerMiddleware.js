@@ -20,7 +20,7 @@ const _swaggerDefinition = {
 const _swaggerOptions = {
     swaggerDefinition: _swaggerDefinition,
     apis: [
-        './app/routes/*.js'
+        './routes/*.js'
     ]
 };
 

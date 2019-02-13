@@ -14,4 +14,4 @@ logs
 results
 build
 
-app/.env
+.env
