@@ -39,7 +39,7 @@ router.post("/start", jwtMiddleware(), (req, res) => {
         mysqlConnection.query("CALL ddd.Date_Add(?, ?)", [date, time],
             (err, result, fields) => {
                 if (err) {
-                    return res.json({ "status": "failed", "error": err.code })
+                    return res.status(err.code).json({ "status": "failed", "error": err.code })
                 } else {
                     global.number = Math.floor(Math.random() * (99 - 10)) + 10
                     setTimeout(() => { number = IS_CLOSED }, INTERVAL)
