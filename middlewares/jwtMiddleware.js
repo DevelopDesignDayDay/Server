@@ -9,7 +9,7 @@ module.exports = ()=> function verifyToken(req,res,next) {
     const key = process.env.JWT_SECRET_KEY
     jsonwebtoken.verify(token, key, {algorithms: ['HS512']},(err, decode)=>{
         if(err){
-           return res.status(401).json({"status": "fail", "message" : "Invalid Token" })
+           return res.status(401).json({"status": "failed", "message" : "Invalid Token" })
         }else {
             next()
         }
