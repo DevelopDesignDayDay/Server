@@ -46,7 +46,7 @@ const TYPE_ADMIN = 1
  *              accessToken: ..
  *              refreshToken: ..
  *        401:
- *          description: failed
+ *          description: login failed
  *          example:
  *            status: failed
  *            message: Unauthorized

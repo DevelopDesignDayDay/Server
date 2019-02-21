@@ -42,10 +42,11 @@ router.post("/start", jwtMiddleware(), (req, res) => {
                     return res.status(err.code).json({ "status": "failed", "error": err.code })
                 } else {
                     global.number = Math.floor(Math.random() * (99 - 10)) + 10
-                    setTimeout(() => { number = IS_CLOSED }, INTERVAL)
+                    return res.json({ "status": "success", "number": global.number })
 
-                    var expire = new Date(current.setMinutes(current.getMinutes() + (INTERVAL / 60000))).toFormat('YYYY-MM-DD HH24:MI:SS')
-                    return res.json({ "status": "success", "number": global.number, "expire": expire })
+                   // setTimeout(() => { number = IS_CLOSED }, INTERVAL)
+                   // var expire = new Date(current.setMinutes(current.getMinutes() + (INTERVAL / 60000))).toFormat('YYYY-MM-DD HH24:MI:SS')
+                   // return res.json({ "status": "success", "number": global.number, "expire": expire })
                 }
             })
     } else {
@@ -172,26 +173,26 @@ router.post("/check", jwtMiddleware(), (req, res) => {
     }
 })
 
-/**
-* @swagger
-*  /attends/time:
-*    put:
-*      tags: [Attend]
-*      summary: 출석 입력 번호 유효 시간 
-*      parameters:
-*        - in: query
-*          required: true
-*          type: integer
-*          name: minutes
-*          description: 분 단위로 입력
-*      responses:
-*        '200' :
-*           description: success
-*           example:
-*              status: success
-*              minutes: 3
-* 
-*/
+// /**
+// * @swagger
+// *  /attends/time:
+// *    put:
+// *      tags: [Attend]
+// *      summary: 출석 입력 번호 유효 시간 
+// *      parameters:
+// *        - in: query
+// *          required: true
+// *          type: integer
+// *          name: minutes
+// *          description: 분 단위로 입력
+// *      responses:
+// *        '200' :
+// *           description: success
+// *           example:
+// *              status: success
+// *              minutes: 3
+// * 
+// */
 router.put('/time', jwtMiddleware(), (req, res) => {
     var minutes = req.query.minutes
     if (typeof minutes != global.number) {
