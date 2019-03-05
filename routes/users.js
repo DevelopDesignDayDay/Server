@@ -72,7 +72,7 @@ router.post('/', jwtMiddleware(), (req, res) => {
 
   async.waterfall(task, (err, result) => {
     if (err) {
-      res.status(err.code).json({ "status": "failed", "error": err.message })
+      res.status(500).json({ "status": "failed", "error": err.message })
       return
     } else {
       return res.json({ "status": "success", "userId": result })

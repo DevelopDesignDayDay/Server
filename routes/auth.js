@@ -68,7 +68,7 @@ router.post('/login', (req, res) => {
     mysqlConnection.query("SELECT id, name, account, type_id as type FROM Users WHERE account = ? AND password= ?", params,
       (err, result, field) => {
         if (err) {
-          return res.status(err.code).json({ "status": "failed", "error": err.code })
+          return res.status(500).json({ "status": "failed", "error": err.code })
         } else {
           if (result.length > 0) {
             // get jwt access token 

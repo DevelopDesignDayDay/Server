@@ -39,7 +39,7 @@ router.post("/start", jwtMiddleware(), (req, res) => {
         mysqlConnection.query("CALL ddd.Date_Add(?, ?)", [date, time],
             (err, result, fields) => {
                 if (err) {
-                    return res.status(err.code).json({ "status": "failed", "error": err.code })
+                    return res.status(500).json({ "status": "failed", "error": err.message })
                 } else {
                     global.number = Math.floor(Math.random() * (99 - 10)) + 10
                     return res.json({ "status": "success", "number": global.number })
@@ -85,7 +85,7 @@ router.post("/end", jwtMiddleware(), (req, res) => {
         mysqlConnection.query('CALL ddd.Date_Update_ForEndTime(?,?)', [date, time],
             (err, result, fields) => {
                 if (err) {
-                    res.status(err.code).json({ "status": "failed", "message": err.message })
+                    res.status(500).json({ "status": "failed", "message": err.message })
                     return
                 } else {
                     global.number = IS_CLOSED
@@ -160,7 +160,11 @@ router.post("/check", jwtMiddleware(), (req, res) => {
 
         async.waterfall(task, (err, result) => {
             if (err) {
-                res.status(err.code).json({ "status": "failed", "message": err.message })
+                if(err.code == "ER_NO_REFERENCED_ROW_2"){
+                    res.status(400).json({ "status": "failed", "message": "유효하지 않은 유저 Id입니다." })
+                }else {
+                    res.status(500).json({ "status": "failed", "message": err.message })
+                }
                 return
             } else {
                 return res.json({ "status": "success", "message": "출석체크가 완료되었습니다." })
