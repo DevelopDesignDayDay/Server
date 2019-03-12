@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 var mysqlConnection = require('../middlewares/mysqlConnection')
 var jsonwebtoken = require('jsonwebtoken')
+var jwtMiddleware = require('../middlewares/jwtMiddleware');
 
 const MINUTE = 3600
 const ACCESS_TOKEN_EXPIRES = MINUTE * 3
@@ -158,6 +159,45 @@ router.post('/token', (req, res) => {
     })
   }
 })
+
+/**
+ * @swagger
+ *  /auth/code:
+ *    post:
+ *      tags: [Auth]
+ *      summary: 가입 코드 설정
+ *      consumes:
+ *        - application/x-www-form-urlencoded
+ *      parameters:
+ *        - in: formData
+ *          required: true
+ *          type: string
+ *          name: code
+ *          description: '가입 코드 (띄어쓰기 없이 입력)'
+ *      responses:
+ *        200 :
+ *           description: success
+ *           example:
+ *              status: success
+ *              code: 가입 코드
+ *        401:
+ *          description: Invalid Token
+ *          example:
+ *            status: failed
+ *            message: Invalid Token
+ * 
+ */
+router.post('/code', jwtMiddleware(), (req, res) => {
+  var code = req.body.code
+  if(code.length > 0){
+    process.env.JOIN_SECRET_CODE = code
+    return res.json({ "status": "success", "code": code })
+  }else {
+    res.status(400).json({ "status": "failed", "message": "가입코드를 입력하세요." })
+    return
+  }
+})
+
 
 function getTokens(json, expiresIn) {
   const key = process.env.JWT_SECRET_KEY
