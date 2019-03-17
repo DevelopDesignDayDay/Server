@@ -47,7 +47,12 @@ var async = require('async')
  *          required: true
  *          type: number
  *          name: type
- *          description: '유저 타입 (1: 일반; 2: 운영진)'     
+ *          description: '유저 타입 (1: 일반; 2: 운영진)'    
+ *        - in: formData
+ *          required: false
+ *          type: number
+ *          name: team
+ *          description: '팀 (1: AOS; 2: IOS, 3: 서버, 4: 디자인)' 
  *      responses:
  *        '200' :
  *           description: success
@@ -77,7 +82,7 @@ router.post('/', (req, res) => {
     return
   } else {
     var body = req.body
-    var params = [body.account, body.password, body.name, body.type, body.email]
+    var params = [body.account, body.password, body.name, body.type, body.email, body.team]
 
     if(body.code != process.env.JOIN_SECRET_CODE){
       res.status(400).json({ "status": "failed", "message": "가입 코드가 일치하지 않습니다." })
@@ -88,13 +93,25 @@ router.post('/', (req, res) => {
       mysqlConnection.query("SELECT * FROM Users WHERE account = ?", [body.account], (err, result, fields) => {
         if (result.length > 0) {
           res.status(400).json({ "status": "failed", "message": "이미 등록된 계정입니다." })
-
         } else {
           cb(err)
         }
       })
-    }, (cb) => {
-      mysqlConnection.query("CALL ddd.User_Add(?,?,?,?,?)", params, (err, result, field) => {
+    },(cb)=>{
+      if(body.team != null){
+        mysqlConnection.query("SELECT * FROM Teams WHERE id = ?", [body.team], (err, result, fields)=>{
+          if(result.length > 0){ 
+            cb(err)
+          }else {
+            res.status(400).json({ "status": "failed", "message": "유효하지 않은 팀 id 입니다." })
+          }
+        })
+      }else {
+        cb(null)
+      }
+    },
+     (cb) => {
+      mysqlConnection.query("CALL ddd.User_Add(?,?,?,?,?,?)", params, (err, result, field) => {
         var userId = result[0][0].userId
         if (userId > 0) {
           cb(err, userId)
