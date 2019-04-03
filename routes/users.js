@@ -4,6 +4,8 @@ var mysqlConnection = require('../middlewares/mysqlConnection')
 var jwtMiddleware = require('../middlewares/jwtMiddleware');
 var router = express.Router();
 var async = require('async')
+var url = require('url')
+var queryString = require('querystring')
 
 
 /**
@@ -72,14 +74,8 @@ var async = require('async')
  * 
  */
 router.post('/', (req, res) => {
-  const auth = { username: process.env.AUTH_USERNAME, password: process.env.AUTH_PASSWORD }
-  const base64Credentials = (req.headers.authorization || '').split(' ')[1] || ''
-  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii')
-  const [username, password] = credentials.split(':')
-
-  if (!username || !password || username != auth.username || password != auth.password) {
-    res.status(401).json({ "status": "failed", "message": "Unauthorized" })
-    return
+  if (!isAuthorized(req)) {
+    return res.status(401).json({ "status": "failed", "message": "Unauthorized" })
   } else {
     var body = req.body
     var params = [body.account, body.password, body.name, body.type, body.email, body.team]
@@ -133,4 +129,72 @@ router.post('/', (req, res) => {
 
 })
 
+/**
+ * @swagger
+ *  /users/find:
+ *    get:
+ *      tags: [User]
+ *      summary: 유저 아이디 검색
+ *      security:
+ *        - basicAuth: 
+ *            type: basic
+ *      parameters:
+ *        - in: query
+ *          required: true
+ *          type: string
+ *          name: name
+ *          description: 유저 명
+ *      responses:
+ *        '200' :
+ *           description: success
+ *           example:
+ *              status: success
+ *              name: 김유저 
+ *              account: 아이디
+ *              team: 소속 섹션 팀
+ *        '400' :
+ *           description: failed
+ *           example:
+ *              status: failed
+ *              message: 존재하지 않는 유저 명 입니다.
+ *        '401':
+ *          description: Unauthorized
+ *          example:
+ *            status: failed
+ *            message: Unauthorized
+ */
+router.get("/find", (req,res)=>{
+  if (!isAuthorized(req)) {
+    return res.status(401).json({ "status": "failed", "message": "Unauthorized" })
+  }else {
+    var parseUrl = url.parse(req.url)
+    var parseQuery =  queryString.parse(parseUrl.query, '&', '=')
+    var query = "SELECT	u.name as name, u.account as account, if(t.name is null, '미지정', t.name) as team FROM Users u  LEFT JOIN	Teams t ON u.team_id = t.id WHERE	u.name = ?"
+
+    mysqlConnection.query(query, [parseQuery.name], (err, result)=>{
+      if(err){
+        return res.status(500).json({ "status": "failed", "error": err.message })
+      }else {
+        if(result.length > 0){
+          return res.json({ "status": "success", "account": result[0].account, "name": result[0].name, "team": result[0].team})
+        }else{
+          return res.status(400).json({ "status": "failed", "message": "존재하지 않는 유저 명 입니다."})
+        }
+      }
+    })
+  }
+})
+
+function isAuthorized(req){
+  const auth = { username: process.env.AUTH_USERNAME, password: process.env.AUTH_PASSWORD }
+  const base64Credentials = (req.headers.authorization || '').split(' ')[1] || ''
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii')
+  const [username, password] = credentials.split(':')
+
+  if (!username || !password || username != auth.username || password != auth.password) {
+    return false
+  }else {
+    return true
+  }
+}
 module.exports = router;
